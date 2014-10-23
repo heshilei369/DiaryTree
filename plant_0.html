@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Test von Web GL</title>
+  <meta charset="utf-8">
+</head>
+<body style="margin: 0;">
+ 
+<script src="js/three.min.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script src="js/ColladaLoader.js"></script>
+<script src="js/Tween.js"></script>
+<script>   
+    var scene, camera, renderer;
+    var dae;
+
+    init();  
+    animate();
+    
+    
+    function init() {
+      scene = new THREE.Scene();
+      var WIDTH = window.innerWidth,
+          HEIGHT = window.innerHeight;
+  
+      renderer = new THREE.WebGLRenderer({antialias:true});
+      renderer.setSize(WIDTH, HEIGHT);
+      document.body.appendChild(renderer.domElement);
+  
+      camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 10000);
+      camera.position.set(-30,0,0);
+      scene.add(camera);
+     //fix camera direction
+/*      var cameraTarget = new THREE.Object3D();
+      cameraTarget.position.x = -70;
+      cameraTarget.position.y = 0;
+      cameraTarget.position.z = 0;
+      camera.target = cameraTarget;
+        */
+        
+      window.addEventListener('resize', function() {
+            var WIDTH = window.innerWidth,
+                HEIGHT = window.innerHeight;
+            renderer.setSize(WIDTH, HEIGHT);
+            camera.aspect = WIDTH / HEIGHT;
+            camera.updateProjectionMatrix();
+      });
+       
+      skyMesh = new THREE.Mesh( new THREE.SphereGeometry(2000, 32, 15), new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture("sky.jpeg" )} ) );
+                skyMesh.scale.x = -1;
+                skyMesh.position.y = -700;
+                skyMesh.useQuaternion = true;
+                scene.add( skyMesh );
+ 
+      scene.add( new THREE.AmbientLight( 0xcccccc ) );
+
+      var loader = new THREE.ColladaLoader();
+      loader.options.convertUpAxis = true;   
+        
+      loader.load( './plant/Plant1_0.dae', function ( collada ) {
+      dae = collada.scene;
+      var skin = collada.skins[ 0 ];  
+      //dae.scale = new THREE.Vector3(0,0,0);
+ //     dae.scale.set(3,3,3);
+      dae.rotation.x =   Math.PI / 2;
+      dae.position.set(0,0,-12);
+      dae.scale.set(0,0,0);
+//      scene.add(dae);
+
+      var geometry = new THREE.PlaneGeometry( 500, 300, 1, 1 );
+      geometry.vertices[0].uv = new THREE.Vector2(0,0);
+      geometry.vertices[1].uv = new THREE.Vector2(2,0);
+      geometry.vertices[2].uv = new THREE.Vector2(2,2);
+      geometry.vertices[3].uv = new THREE.Vector2(0,2);
+
+      var texture = THREE.ImageUtils.loadTexture("ground.jpeg",null,function(t){});
+      var material = new THREE.MeshBasicMaterial({map:texture});
+      groundmesh = new THREE.Mesh( geometry,material );
+      groundmesh.rotation.x = - Math.PI / 2;
+      groundmesh.scale.set( 10,10,10);
+      groundmesh.position.y = -25;
+          
+      var daeContainer = new THREE.Object3D();
+      daeContainer.useQuaternion = true;
+      daeContainer.add( dae );
+      groundmesh.add( daeContainer );
+          
+      scene.add( groundmesh );
+                    
+      initAnimations();    
+      });
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+   
+    }
+    
+    var tweenScale;
+    function initAnimations() {
+        //scale  
+        tweenScale = new TWEEN.Tween(dae.scale)
+        .delay(2000)
+        .to({x: 1, y: 1, z: 1}, 2000)
+        .easing(TWEEN.Easing.Sinusoidal.EaseInOut)
+
+        tweenScale.start();
+    }            
+                
+              
+    function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+        controls.update();
+        TWEEN.update();
+    }
+ 
+  </script>
+</body>
+</html>
