@@ -10,6 +10,8 @@
 <script src="js/OrbitControls.js"></script>
 <script src="js/ColladaLoader.js"></script>
 <script src="js/Tween.js"></script>
+<script src="js/dat.gui.min.js"></script>
+
 <script>   
     var scene, camera, renderer;
     var dae;
@@ -54,19 +56,7 @@
  
       scene.add( new THREE.AmbientLight( 0xcccccc ) );
 
-      var loader = new THREE.ColladaLoader();
-      loader.options.convertUpAxis = true;   
         
-      loader.load( './plant/Plant1_0.dae', function ( collada ) {
-      dae = collada.scene;
-      var skin = collada.skins[ 0 ];  
-      //dae.scale = new THREE.Vector3(0,0,0);
- //     dae.scale.set(3,3,3);
-      dae.rotation.x =   Math.PI / 2;
-      dae.position.set(0,0,-12);
-      dae.scale.set(0,0,0);
-//      scene.add(dae);
-
       var geometry = new THREE.PlaneGeometry( 500, 300, 1, 1 );
       geometry.vertices[0].uv = new THREE.Vector2(0,0);
       geometry.vertices[1].uv = new THREE.Vector2(2,0);
@@ -79,20 +69,36 @@
       groundmesh.rotation.x = - Math.PI / 2;
       groundmesh.scale.set( 10,10,10);
       groundmesh.position.y = -25;
-          
+              
+        
+      scene.add( groundmesh );
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      createUI();
+    }
+
+    function load_tree(){
+      var loader = new THREE.ColladaLoader();
+      loader.options.convertUpAxis = true;   
+        
+      loader.load( './plant/Plant1_0.dae', function ( collada ) {
+      dae = collada.scene;
+      var skin = collada.skins[ 0 ];  
+      dae.rotation.x =   Math.PI / 2;
+      dae.position.x = addtree.position_x;
+      dae.position.y = addtree.position_y;
+      dae.position.z = addtree.position_z;    
+      dae.scale.set(0,0,0);
+      
       var daeContainer = new THREE.Object3D();
       daeContainer.useQuaternion = true;
       daeContainer.add( dae );
       groundmesh.add( daeContainer );
-          
-      scene.add( groundmesh );
-                    
+                         
       initAnimations();    
-      });
-
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-   
+      }); //end of loader
+        
     }
+    
     
     var tweenScale;
     function initAnimations() {
@@ -105,7 +111,61 @@
         tweenScale.start();
     }            
                 
-              
+    var addtree; 
+    var addleaf;
+	function createUI()
+	{
+      // For todays date;
+        Date.prototype.today = function () { 
+            return ((this.getDate() < 10)?"0":"") + this.getDate() +"/"+(((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+ this.getFullYear();
+        }
+
+        // For the time now
+        Date.prototype.timeNow = function () {
+             return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
+        }
+      var newDate = new Date();
+      var time = newDate.timeNow();
+      var date = newDate.today();
+        
+      var addTree = function() {
+          this.date = date;
+          this.position_x = '0';
+          this.position_y = '0';
+          this.position_z = '-12';
+          this.addTree = function(){ 
+              console.log("clicked"); 
+              load_tree();
+          };
+      };        
+      var addLeaf = function() {
+          this.time = time;
+          this.title = 'Enter title';
+          this.text = 'Enter text';
+          this.mediaLink = 'Enter Link';
+          this.addLeaf = function(){ 
+              console.log("clicked"); 
+          };
+      };
+
+      addtree = new addTree();  
+      addleaf = new addLeaf();
+      var gui = new dat.GUI();
+      var folder1 = gui.addFolder('add Tree');
+      folder1.add(addtree, 'date');  
+      folder1.add(addtree, 'position_x'); 
+      folder1.add(addtree, 'position_y'); 
+      folder1.add(addtree, 'position_z'); 
+      folder1.add(addtree,'addTree');           
+      var folder2 = gui.addFolder('add leaf');
+      folder2.add(addleaf, 'time');
+      folder2.add(addleaf, 'title');
+      folder2.add(addleaf, 'text');
+      folder2.add(addleaf, 'mediaLink');
+      folder2.add(addleaf,'addLeaf');
+	}
+    
+    
     function animate() {
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
