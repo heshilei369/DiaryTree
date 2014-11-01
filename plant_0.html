@@ -11,6 +11,7 @@
 <script src="js/ColladaLoader.js"></script>
 <script src="js/Tween.js"></script>
 <script src="js/dat.gui.min.js"></script>
+<script src="js/taffy.js"></script>    
 
 <script>   
     var scene, camera, renderer;
@@ -76,7 +77,7 @@
       createUI();
     }
 
-    function load_tree(){
+    function load_tree(position_x,position_y,position_z){
       var loader = new THREE.ColladaLoader();
       loader.options.convertUpAxis = true;   
         
@@ -84,13 +85,13 @@
       dae = collada.scene;
       var skin = collada.skins[ 0 ];  
       dae.rotation.x =   Math.PI / 2;
-      dae.position.x = addtree.position_x;
-      dae.position.y = addtree.position_y;
-      dae.position.z = addtree.position_z;    
+      dae.position.x = position_x;
+      dae.position.y = position_y;
+      dae.position.z = position_z;    
       dae.scale.set(0,0,0);
       
       var daeContainer = new THREE.Object3D();
-      daeContainer.useQuaternion = true;
+   //   daeContainer.useQuaternion = true;
       daeContainer.add( dae );
       groundmesh.add( daeContainer );
                          
@@ -98,6 +99,28 @@
       }); //end of loader
         
     }
+    
+   
+    function saveTreeData(date,position_x,position_y,position_z){
+      var tree_data = {};
+      tree_data.date = date;
+      tree_data.position_x = position_x;
+      tree_data.position_y = position_y;
+      tree_data.position_z = position_z;
+      localStorage.setItem(date, JSON.stringify(tree_data) );
+    }
+
+    var d,px,py,pz;
+    function loadTreeData(date){
+      var tree_data = {};
+      tree_data = JSON.parse(localStorage.getItem(date));
+      d = tree_data.date;
+      px = tree_data.position_x;
+      py = tree_data.position_y;
+      pz = tree_data.position_z;
+//      console.log(pz);
+    }
+
     
     
     var tweenScale;
@@ -135,16 +158,21 @@
           this.position_z = '-12';
           this.addTree = function(){ 
               console.log("clicked"); 
-              load_tree();
+              load_tree(addtree.position_x,addtree.position_y,addtree.position_z);
+              saveTreeData(addtree.date,addtree.position_x,addtree.position_y,addtree.position_z);
           };
       };        
       var addLeaf = function() {
+          this.date = 'Enter date to add the leaves';
           this.time = time;
           this.title = 'Enter title';
           this.text = 'Enter text';
           this.mediaLink = 'Enter Link';
           this.addLeaf = function(){ 
               console.log("clicked"); 
+/*              loadTreeData(addLeaf.date);
+              //px,py,pz
+              load_leaf();*/
           };
       };
 
@@ -158,6 +186,7 @@
       folder1.add(addtree, 'position_z'); 
       folder1.add(addtree,'addTree');           
       var folder2 = gui.addFolder('add leaf');
+      folder2.add(addleaf, 'date');  
       folder2.add(addleaf, 'time');
       folder2.add(addleaf, 'title');
       folder2.add(addleaf, 'text');
