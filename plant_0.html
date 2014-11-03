@@ -11,11 +11,10 @@
 <script src="js/ColladaLoader.js"></script>
 <script src="js/Tween.js"></script>
 <script src="js/dat.gui.min.js"></script>
-<script src="js/taffy.js"></script>    
+<!--script src="js/taffy.js"></script-->    
 
 <script>   
     var scene, camera, renderer;
-    var dae;
 
     init();  
     animate();
@@ -77,6 +76,7 @@
       createUI();
     }
 
+    var dae;
     function load_tree(position_x,position_y,position_z){
       var loader = new THREE.ColladaLoader();
       loader.options.convertUpAxis = true;   
@@ -95,11 +95,34 @@
       daeContainer.add( dae );
       groundmesh.add( daeContainer );
                          
-      initAnimations();    
+      initAnimations(dae,1,1,1);    
       }); //end of loader
         
     }
     
+    var dae1;
+    function load_leaf(position_x,position_y,position_z,rotation){
+      var loader = new THREE.ColladaLoader();
+      loader.options.convertUpAxis = true;   
+        
+      loader.load( './plant/Leaf_7.dae', function ( collada ) {
+      dae1 = collada.scene;
+      var skin = collada.skins[ 0 ];  
+      dae1.rotation.x = rotation;
+      dae1.position.x = position_x;
+      dae1.position.y = position_y;
+      dae1.position.z = position_z;    
+      dae1.scale.set(0,0,0);
+      
+      var daeContainer = new THREE.Object3D();
+   //   daeContainer.useQuaternion = true;
+      daeContainer.add( dae1 );
+      dae.add(daeContainer);
+                         
+      initAnimations(dae1,1,1,1);    
+      }); //end of loader
+        
+    }    
    
     function saveTreeData(date,position_x,position_y,position_z){
       var tree_data = {};
@@ -124,11 +147,11 @@
     
     
     var tweenScale;
-    function initAnimations() {
+    function initAnimations(dae,x_scale,y_scale,z_scale) {
         //scale  
         tweenScale = new TWEEN.Tween(dae.scale)
         .delay(2000)
-        .to({x: 1, y: 1, z: 1}, 2000)
+        .to({x: x_scale, y: y_scale, z: z_scale}, 2000)
         .easing(TWEEN.Easing.Sinusoidal.EaseInOut)
 
         tweenScale.start();
@@ -172,7 +195,8 @@
               console.log("clicked"); 
 /*              loadTreeData(addLeaf.date);
               //px,py,pz
-              load_leaf();*/
+*/
+              load_leaf(28,-7,-2.5, 25*Math.PI/180);
           };
       };
 
@@ -184,7 +208,8 @@
       folder1.add(addtree, 'position_x'); 
       folder1.add(addtree, 'position_y'); 
       folder1.add(addtree, 'position_z'); 
-      folder1.add(addtree,'addTree');           
+      folder1.add(addtree,'addTree');     
+      folder1.open();     
       var folder2 = gui.addFolder('add leaf');
       folder2.add(addleaf, 'date');  
       folder2.add(addleaf, 'time');
@@ -192,6 +217,7 @@
       folder2.add(addleaf, 'text');
       folder2.add(addleaf, 'mediaLink');
       folder2.add(addleaf,'addLeaf');
+      folder2.open();    
 	}
     
     
