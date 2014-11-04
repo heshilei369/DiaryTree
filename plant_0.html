@@ -101,11 +101,11 @@
     }
     
     var dae1;
-    function load_leaf(position_x,position_y,position_z,rotation){
+    function load_leaf(path,position_x,position_y,position_z,rotation){
       var loader = new THREE.ColladaLoader();
       loader.options.convertUpAxis = true;   
         
-      loader.load( './plant/Leaf_7.dae', function ( collada ) {
+      loader.load(path, function ( collada ) {
       dae1 = collada.scene;
       var skin = collada.skins[ 0 ];  
       dae1.rotation.x = rotation;
@@ -123,7 +123,25 @@
       }); //end of loader
         
     }    
-   
+    
+    var click = 0;
+    
+    function load_leaves(){
+        if(click == 1){
+            load_leaf('./plant/Leaf_7.dae',28,-7,-2.5, 25*Math.PI/180);
+            saveLeafData(addleaf.date,addleaf.time,addleaf.type,addleaf.title,addleaf.text,addleaf.mediaLink);
+        }
+        else if(click == 2){
+            load_leaf('./plant/Leaf_6.dae',28,-10,-7, 25*Math.PI/180);
+        }
+        else if(click == 3){
+            load_leaf('./plant/Leaf_5.dae',28,-7,-10, 25*Math.PI/180);
+        }
+        else if(click == 4){
+            load_leaf('./plant/Leaf_4.dae',28,-7,-2.5, 25*Math.PI/180);
+            click = 0;
+        }  
+    }
     function saveTreeData(date,position_x,position_y,position_z){
       var tree_data = {};
       tree_data.date = date;
@@ -141,9 +159,35 @@
       px = tree_data.position_x;
       py = tree_data.position_y;
       pz = tree_data.position_z;
-//      console.log(pz);
+      console.log(pz);
+    }
+    
+    function saveLeafData(date,time,type,title,text,mediaLink){
+      var data = {};    
+      data.date = date;
+      data.time = time;
+      var leaf_data = {};
+      leaf_data.date = date;
+      leaf_data.time = time;
+      leaf_data.type = type;
+      leaf_data.title = title;
+      leaf_data.text = text;
+      leaf_data.mediaLink = mediaLink;
+      localStorage.setItem(data, JSON.stringify(leaf_data) );
     }
 
+    var Date,Time,Type,Title,Text,MediaLink;
+    function loadLeafData(data){
+      var leaf_data = {};
+      leaf_data = JSON.parse(localStorage.getItem(data));
+      Date = leaf_data.date;
+      Time = leaf_data.time;
+      Type = leaf_data.type;
+      Title = leaf_data.title;
+      Text = leaf_data.text;
+      MediaLink = leaf_data.mediaLink;  
+      console.log(Time);
+    }
     
     
     var tweenScale;
@@ -188,18 +232,26 @@
       var addLeaf = function() {
           this.date = 'Enter date to add the leaves';
           this.time = time;
-          this.title = 'Enter title';
+          this.type = "video"
+          this.title = 'Enter title'; 
           this.text = 'Enter text';
           this.mediaLink = 'Enter Link';
           this.addLeaf = function(){ 
               console.log("clicked"); 
-/*              loadTreeData(addLeaf.date);
+              loadTreeData(addleaf.date);
               //px,py,pz
-*/
-              load_leaf(28,-7,-2.5, 25*Math.PI/180);
+
+              click = click +1;
+              load_leaves();
+//load_leaf('./plant/Leaf_3.dae',35,0,15, -10*Math.PI/180);
+              //Date,Time,Type,Title,Text,MediaLink;
+/*              var data = {};    
+              data.date = addleaf.date;
+              data.time = addleaf.time;
+              loadLeafData(data);*/
           };
       };
-
+              
       addtree = new addTree();  
       addleaf = new addLeaf();
       var gui = new dat.GUI();
@@ -213,11 +265,13 @@
       var folder2 = gui.addFolder('add leaf');
       folder2.add(addleaf, 'date');  
       folder2.add(addleaf, 'time');
+      folder2.add(addleaf, 'type', [ 'video', 'image', 'twitter' ] );
       folder2.add(addleaf, 'title');
       folder2.add(addleaf, 'text');
       folder2.add(addleaf, 'mediaLink');
       folder2.add(addleaf,'addLeaf');
       folder2.open();    
+
 	}
     
     
